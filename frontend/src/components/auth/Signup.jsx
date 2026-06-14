@@ -1,142 +1,204 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../authContext";
-import { PageHeader, Box, Button } from "@primer/react";
-import "./auth.css";
+import { Button, Heading, BaseStyles } from "@primer/react";
 import logo from "../../assets/github-mark-white.svg";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
   const { setCurrentUser } = useAuth();
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    
-    // Basic validation
-    if (!email || !username || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
-
     try {
       setLoading(true);
-      setError(null);
-
-      const res = await axios.post("/api/signup", {
-        email,
-        password,
-        username,
+      const res = await axios.post("http://localhost:3003/signup", {
+        email: email,
+        password: password,
+        username: username,
       });
-
-      if (res.data && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("userId", res.data.userId);
-        setCurrentUser(res.data.userId);
-        navigate("/"); // Using navigate instead of window.location
-      } else {
-        throw new Error("Invalid response from server");
-      }
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("userId", res.data.userId);
+      setCurrentUser(res.data.userId);
+      setLoading(false);
+      window.location.href = "/";
     } catch (err) {
-      console.error("Signup Error:", err);
-      setError(err.response?.data?.message || "Signup failed. Please try again.");
-    } finally {
+      console.error(err);
+      alert("Signup Failed!");
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-wrapper">
-      <div className="login-logo-container">
-        <img className="logo-login" src={logo} alt="GitHub Logo" />
-      </div>
-
-      <div className="login-box-wrapper">
-        <div className="login-heading">
-          <Box sx={{ padding: 1 }}>
-            <h1 style={{ color: "#f1f6fd", fontSize: "32px", marginBottom: "10px" }}>
-              Sign Up
-            </h1>
-          </Box>
+    <BaseStyles>
+      <div style={styles.page}>
+        {/* Logo */}
+        <div style={styles.logoContainer}>
+          <img src={logo} alt="GitHub Logo" style={styles.logo} />
         </div>
 
-        {error && (
-          <div className="error-message" style={{ color: "red", marginBottom: "15px" }}>
-            {error}
-          </div>
-        )}
+        {/* Heading */}
+        <Heading as="h1" style={styles.heading}>
+          Sign Up
+        </Heading>
 
-        <form onSubmit={handleSignup} className="login-box">
-          <div>
-            <label className="label">Username</label>
+        {/* Form Box */}
+        <div style={styles.formBox}>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Username</label>
             <input
               autoComplete="off"
-              name="username"
-              id="username"
-              className="input"
+              name="Username"
+              id="Username"
+              style={styles.input}
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
             />
           </div>
 
-          <div>
-            <label className="label">Email address</label>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Email address</label>
             <input
               autoComplete="off"
-              name="email"
-              id="email"
-              className="input"
+              name="Email"
+              id="Email"
+              style={styles.input}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
 
-          <div>
-            <label className="label">Password</label>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Password</label>
             <input
               autoComplete="off"
-              name="password"
-              id="password"
-              className="input"
+              name="Password"
+              id="Password"
+              style={styles.input}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength="6"
             />
           </div>
 
           <Button
             variant="primary"
-            className="login-btn"
             disabled={loading}
-            type="submit"
+            onClick={handleSignup}
+            style={styles.button}
           >
-            {loading ? "Loading..." : "Sign Up"}
+            {loading ? "Loading..." : "Signup"}
           </Button>
-        </form>
+        </div>
 
-        <div className="pass-box">
-          <p style={{ color: "#f1f6fd" }}>
+        {/* Already have account box */}
+        <div style={styles.loginBox}>
+          <p style={styles.loginText}>
             Already have an account?{" "}
-            <Link to="/auth" style={{ color: "#58a6ff" }}>
-              Log in
+            <Link to="/auth" style={styles.link}>
+              Login
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </BaseStyles>
   );
+};
+
+const styles = {
+  page: {
+    backgroundColor: "#0d1117",
+    minHeight: "100vh",
+    width: "100%",
+    margin: 0,
+    padding: "40px 16px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
+  logoContainer: {
+    marginBottom: "16px",
+  },
+  logo: {
+    width: "52px",
+    height: "52px",
+  },
+  heading: {
+    color: "#e6edf3",
+    fontSize: "28px",
+    fontWeight: "300",
+    marginBottom: "20px",
+    textAlign: "center",
+  },
+  formBox: {
+    backgroundColor: "#161b22",
+    border: "1px solid #30363d",
+    borderRadius: "10px",
+    padding: "24px",
+    width: "100%",
+    maxWidth: "340px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
+  },
+  fieldGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  label: {
+    color: "#e6edf3",
+    fontSize: "14px",
+    fontWeight: "600",
+  },
+  input: {
+    backgroundColor: "#0d1117",
+    border: "1px solid #30363d",
+    borderRadius: "6px",
+    color: "#e6edf3",
+    fontSize: "14px",
+    padding: "8px 12px",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+  button: {
+    width: "100%",
+    padding: "8px",
+    fontSize: "14px",
+    marginTop: "4px",
+    backgroundColor: "#238636",
+    borderColor: "#2ea043",
+    color: "#fff",
+    cursor: "pointer",
+  },
+  loginBox: {
+    backgroundColor: "#161b22",
+    border: "1px solid #30363d",
+    borderRadius: "10px",
+    padding: "20px",
+    width: "100%",
+    maxWidth: "340px",
+    marginTop: "16px",
+    textAlign: "center",
+  },
+  loginText: {
+    color: "#e6edf3",
+    fontSize: "14px",
+    margin: 0,
+  },
+  link: {
+    color: "#58a6ff",
+    textDecoration: "none",
+  },
 };
 
 export default Signup;

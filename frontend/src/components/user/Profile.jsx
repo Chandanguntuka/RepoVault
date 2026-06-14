@@ -20,7 +20,7 @@ const Profile = () => {
       if (userId) {
         try {
           const response = await axios.get(
-            `http://localhost:3000/userProfile/${userId}`
+            `http://localhost:3003/userProfile/${userId}`
           );
           setUserDetails(response.data);
         } catch (err) {
@@ -104,7 +104,4 @@ const Profile = () => {
   );
 };
 
-
 export default Profile;
-// This component is a placeholder for the user profile page.
-// It currently displays a simple heading "Profile".

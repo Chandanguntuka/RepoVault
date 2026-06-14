@@ -9,7 +9,8 @@ async function initRepo(){
 
 
     try{
-        await fs.mkdir(repoPath, { recursive: true });
+        await fs.mkdir(repoPath, { recursive: true });//the path that gets created is the current working directory + 'my_repo'
+        // in the nested path, we create the 'commits' directory inside 'my_repo' and other folders like 'staging' and 'objects' can be created in the future
         await fs.mkdir(commitsPath, { recursive: true });
         await fs.writeFile(
             path.join(repoPath,'config.json'),

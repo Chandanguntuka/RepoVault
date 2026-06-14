@@ -5,22 +5,31 @@ const Issue = require("../models/issueModel");
 
 
 async function createRepository(req, res) {
-   /// res.send("Create a new repository");
-   const { owner, name, issues, content, description, visibility } = req.body;
+  const { owner, name, issues = [], content = [], description, visibility } = req.body;
 
   try {
     if (!name) {
       return res.status(400).json({ error: "Repository name is required!" });
     }
 
+    // Validate owner
     if (!mongoose.Types.ObjectId.isValid(owner)) {
       return res.status(400).json({ error: "Invalid User ID!" });
+    }
+
+    // Validate issues array
+    if (issues.length > 0) {
+      for (let issueId of issues) {
+        if (!mongoose.Types.ObjectId.isValid(issueId)) {
+          return res.status(400).json({ error: "Invalid Issue ID!" });
+        }
+      }
     }
 
     const newRepository = new Repository({
       name,
       description,
-      visibility,
+      visibility: visibility === true || visibility === "true", // convert to Boolean
       owner,
       content,
       issues,
@@ -32,11 +41,13 @@ async function createRepository(req, res) {
       message: "Repository created!",
       repositoryID: result._id,
     });
+
   } catch (err) {
-    console.error("Error during repository creation : ", err.message);
+    console.error("Error during repository creation:", err);
     res.status(500).send("Server error");
   }
-};
+}
+
 
 
 // const getAllRepositories = (req, res) => {
@@ -101,19 +112,6 @@ const fetchRepositoryForCurrentUser = async (req, res) => {
   }
 };
 
-
-
-// const updateRepositoryById = (req,res) =>{
-//     res.send("Repository Updated");
-// };
-
-// const toggleVisibilityById = (req, res) => {
-//     res.send(`Toggled visibility for repository with ID: ${req.params.id}`);
-// };
-
-// const deleteRepositoryById = (req,res) =>{
-//     res.send("Repository Deleted");
-// };
 async function updateRepositoryById(req, res) {
   const { id } = req.params;
   const { content, description } = req.body;

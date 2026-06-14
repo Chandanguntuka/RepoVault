@@ -15,7 +15,8 @@ async function addRepo(filePath){
     try{
      await fs.mkdir(stagingPath, { recursive: true });
       const  fileName =   path.basename(filePath);
-      await  fs.copyFile(filePath,path.join(stagingPath, fileName));
+      await  fs.copyFile(filePath,path.join(stagingPath, fileName));//without moving the file, we can just copy it to the staging area and keep the original file in its place
+      
        console.log("File added to staging area:", fileName);
 
         // Copy the file to the staging area

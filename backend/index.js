@@ -1,5 +1,6 @@
+require("dotenv").config();
+
 const express = require("express");
-const dotenv = require("dotenv");
  const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -8,8 +9,12 @@ const http = require("http");
 const mainRouter = require("./routes/main.router");
 
 
+console.log("ACCESS:", process.env.AWS_ACCESS_KEY);
+
+
+//step1 : yargs setup
 const yargs = require("yargs");
-const { hideBin } = require("yargs/helpers");
+const { hideBin } = require("yargs/helpers");//giving process.argv except first two default args space btwn the
 
 const { initRepo } = require("./controllers/init");
 const { addRepo } = require("./controllers/add");
@@ -18,8 +23,9 @@ const { pushRepo } = require("./controllers/push");
 const { pullRepo } = require("./controllers/pull");
 const { revertRepo } = require("./controllers/revert");
 
-dotenv.config();
 
+
+//except system commands all other commands will be defined here process.agrv
 yargs(hideBin(process.argv))
   .command("start", "Starts a new server", {}, startServer)
   .command("init", "Initialise a new repository", {}, initRepo)
@@ -64,88 +70,32 @@ yargs(hideBin(process.argv))
       revertRepo(argv.commitID);
     }
   )
+  //user must provide at least one command
   .demandCommand(1, "You need at least one command")
   .help().argv;
 
-//   function startServer() {
-//     console.log("Starting server...");
-//   }
 
-
-// function startServer() {
-    
-// const userRouter = require("./routes/user.router");
-
-
-
-//   const app = express();
-//   const port = process.env.PORT || 3000;
-
-//   app.use(express.json());
-// app.use(bodyParser.json());
-
-// //    app.use(bodyParser.json());
-// //    app.use(express.json());
-
-//    const mongoURI = process.env.MONGODB_URI;
-
-// mongoose
-//     .connect(mongoURI)
-//     .then(() => console.log("MongoDB connected!"))
-//     .catch((err) => console.error("Unable to connect : ", err));
-
-//    app.use(cors({ origin: "*" }));
-
-  
-// //leeting the app use the mainRouter
-//    app.use("/", mainRouter);
-
-//   let user = "test";
-//  const httpServer = http.createServer(app);
-// const io = new Server(httpServer, {
-//     cors: {
-//       origin: "*",
-//       methods: ["GET", "POST"],
-//     },
-//   });
-
-//   io.on("connection", (socket) => {
-//     socket.on("joinRoom", (userID) => {
-//       user = userID;
-//       console.log("=====");
-//       console.log(user);
-//       console.log("=====");
-//       socket.join(userID);
-//     });
-//   });
-
-//   const db = mongoose.connection;
-
-//   db.once("open", async () => {
-//     console.log("CRUD operations called");
-//     // CRUD operations
-//   });
-
-//   httpServer.listen(port, () => {
-//     console.log(`Server is running on PORT ${port}`);
-//   });
-// }
 
 function startServer() {
   const app = express();
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3002;
 
-  app.use(cors({ origin: "*" }));
-  app.use(express.json()); // ✅ No need for bodyParser
+
+  app.use(bodyParser.json()); // Middleware for parsing JSON bodies
+  app.use(express.json()); // Built-in middleware for parsing JSON
 
   mongoose
     .connect(process.env.MONGODB_URI)
     .then(() => console.log("✅ MongoDB connected"))
     .catch((err) => console.error("❌ Unable to connect DB:", err));
 
-  // ✅ Prefix all backend routes with /api
-  app.use("/api", mainRouter);
 
+      app.use(cors({ origin: "*" }));
+
+  // ✅ Prefix all backend routes with /api
+  app.use("/", mainRouter);
+  
+  let user  = null; // Variable to store the user ID of the connected client
   const httpServer = http.createServer(app);
   const io = new Server(httpServer, {
     cors: {
@@ -155,10 +105,21 @@ function startServer() {
   });
 
   io.on("connection", (socket) => {
-    console.log("🔗 New WebSocket connection");
+    socket.on("joinRoom",(userID) =>{
+       user = userID;
+       console.log("User joined room:", userID);
+       socket.join(userID);
+    })
+    console.log(" New WebSocket connection");
+  });
+
+     const db = mongoose.connection;
+  db.once("open", () => {
+    console.log("MongoDB connection established, starting server...");
+    //CRUD operations and other server logic can be placed here, ensuring they only run after a successful DB connection
   });
 
   httpServer.listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
+    console.log(` Server running on http://localhost:${port}`);
   });
 }
