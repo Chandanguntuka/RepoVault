@@ -5,8 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:3000',  // backend port
+      '/api': 'https://repovault-3b9n.onrender.com',
     }
   }
 })
-

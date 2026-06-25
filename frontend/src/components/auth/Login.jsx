@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useAuth } from "../../authContext";
 import { Button, Heading, BaseStyles } from "@primer/react";
 import logo from "../../assets/github-mark-white.svg";
 import { Link } from "react-router-dom";
+import api from "../../api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +21,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:3003/login", {
+      const res = await api.post("/login", {
         email: email,
         password: password,
       });
